@@ -1,0 +1,27 @@
+INSTALLEUR TV LAUNCHER
+======================
+
+1. Double-clique sur Installeur-TV-Launcher.exe.
+   Windows peut afficher « Windows a protégé votre ordinateur » (le programme n'est pas signé) :
+   clique sur « Informations complémentaires » puis « Exécuter quand même ».
+2. Une fenêtre s'ouvre : suis les 6 étapes. La première explique les prérequis
+   (mode développeur de la TV, Android Studio, clés API OpenWeather / TMDB / YouTube).
+3. Les fichiers de travail (adb, sauvegardes, projet, APK) sont créés à côté du .exe,
+   dans le dossier « TvLauncher-Installer-Data ». Le projet est créé dans C:\TvLauncher-Projet.
+
+Tout ce que fait le nettoyage est réversible (bouton « Tout restaurer » à l'étape 4).
+Le fichier TvLauncher-Projet.zip contient tes clés API : ne le partage pas.
+
+COMPATIBILITE
+-------------
+Prévu pour les TV / box Android TV et Google TV sous Android 8.0 ou plus.
+Testé uniquement sur un Philips 55OLED810.
+Incompatible : Samsung (Tizen), LG (webOS), Roku, Apple TV, Fire TV, TV sous VIDAA ou Titan OS.
+
+A SAVOIR
+--------
+- Les suggestions des applis de streaming ouvrent l'application, pas la page du film ou de la série
+  (seul YouTube ouvre directement la vidéo).
+- Selon le modèle de TV, le bouton Paramètres de la télécommande peut ne plus fonctionner avec ce launcher :
+  utilise l'icône ⚙ de l'écran d'accueil.
+- Options à l'étape 2 : afficher ou non la RAM et le stockage, afficher ou non les suggestions.

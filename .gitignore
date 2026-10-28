@@ -1,0 +1,15 @@
+# Secrets et fichiers locaux
+local.properties
+config.json
+TvLauncher-Installer-Data/
+TvLauncher-Projet/
+TvLauncher-Projet.zip
+
+# Générés
+installer/project.zip
+dist/
+build/
+.gradle/
+.idea/
+*.apk
+*.exe

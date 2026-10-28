@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installeur TV Launcher</title>
+<style>
+:root{
+  --bg:#0d1420; --panel:#141d2d; --panel2:#1a2538; --line:#26344d; --text:#e8eef8; --muted:#93a3bd;
+  --accent:#4da3ff; --accent2:#2f7fe0; --ok:#4cd08a; --warn:#ffb547; --bad:#ff6b6b;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#eef2f8; --panel:#ffffff; --panel2:#f3f6fb; --line:#d7dfec; --text:#142033; --muted:#5b6b85; --accent:#1f6fd1; --accent2:#1858a8; }
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel)}
+header .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#4da3ff,#7c5cff);display:grid;place-items:center;font-weight:700;color:#fff}
+header h1{font-size:17px;margin:0;font-weight:650}
+header .sp{flex:1}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 16px;border-radius:9px;font:inherit;cursor:pointer;transition:.15s}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:600}
+.btn.primary:hover:not(:disabled){background:var(--accent)}
+.btn.danger{color:var(--bad)}
+.btn.small{padding:5px 11px;font-size:13px}
+.layout{flex:1;display:flex;min-height:0}
+nav{width:250px;border-right:1px solid var(--line);padding:18px 12px;background:var(--panel);overflow:auto}
+nav .st{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--muted);margin-bottom:4px}
+nav .st .n{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;flex:none}
+nav .st.active{background:var(--panel2);color:var(--text)}
+nav .st.active .n{border-color:var(--accent);color:var(--accent)}
+nav .st.done .n{background:var(--ok);border-color:var(--ok);color:#06210f}
+nav .st.locked{opacity:.4;cursor:not-allowed}
+main{flex:1;overflow:auto;padding:26px 34px 40px}
+section{display:none;max-width:860px}
+section.active{display:block}
+h2{margin:0 0 4px;font-size:22px}
+.sub{color:var(--muted);margin:0 0 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 18px;margin-bottom:14px}
+details.card summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:10px}
+details.card summary::before{content:"▸";color:var(--accent);transition:.15s}
+details.card[open] summary::before{transform:rotate(90deg)}
+details.card[open] summary{margin-bottom:10px}
+ol,ul{margin:6px 0 6px 22px;padding:0}
+li{margin:5px 0}
+a{color:var(--accent)}
+code,.kbd{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:13px Consolas,monospace}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:200px;margin-bottom:12px}
+.field label{font-size:13px;color:var(--muted)}
+input[type=text],input[type=password],select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px 12px;font:inherit;width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.hint{font-size:13px;color:var(--muted)}
+.note{border-left:3px solid var(--warn);background:rgba(255,181,71,.08);padding:9px 13px;border-radius:0 9px 9px 0;margin:10px 0;font-size:14px}
+.note.info{border-color:var(--accent);background:rgba(77,163,255,.08)}
+.note.bad{border-color:var(--bad);background:rgba(255,107,107,.08)}
+.check{display:flex;gap:10px;align-items:flex-start;margin:8px 0;cursor:pointer}
+.check input{margin-top:4px;width:17px;height:17px;accent-color:var(--accent2)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:3px 10px;border-radius:99px;border:1px solid var(--line);background:var(--panel2)}
+.pill.ok{color:var(--ok);border-color:rgba(76,208,138,.4)}
+.pill.bad{color:var(--bad);border-color:rgba(255,107,107,.4)}
+.actions{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.actions .sp{flex:1}
+.console{background:#070b12;color:#cfd8e8;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font:12.5px/1.5 Consolas,"Cascadia Mono",monospace;height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin-top:12px}
+.console:empty::before{content:"Le journal s'affichera ici.";color:#5a6a85}
+.console .ok{color:#4cd08a}.console .bad{color:#ff7b7b}.console .warn{color:#ffc46b}.console .go{color:#6db3ff}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
+@keyframes s{to{transform:rotate(360deg)}}
+.group{margin:12px 0 4px;font-weight:600;color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.bl{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-radius:8px}
+.bl:hover{background:var(--panel2)}
+.bl.absent{opacity:.4}
+.bl small{display:block;color:var(--muted)}
+.kres{font-size:13px;margin-top:4px}
+.kres.ok{color:var(--ok)}.kres.bad{color:var(--bad)}
+.final{text-align:center;padding:30px}
+.final .big{font-size:46px}
+footer{padding:8px 22px;border-top:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
+footer{padding:8px 22px;border-top:1px solid var(--line);background:var(--panel);font-size:12px;color:var(--muted)}
+@media (max-width:820px){nav{display:none}main{padding:18px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">TV</div>
+  <h1>Installeur TV Launcher</h1>
+  <span class="sp"></span>
+  <span class="hint" id="envline"></span>
+  <button class="btn small" id="quit">Quitter</button>
+</header>
+<div class="layout">
+<nav id="nav"></nav>
+<main>
+
+<!-- ================= 1. PRÉREQUIS ================= -->
+<section data-step="1" class="active">
+  <h2>Bienvenue</h2>
+  <p class="sub">Cet assistant installe le launcher personnalisé sur ta TV Android TV / Google TV : il se connecte à la TV, la sauvegarde, la nettoie, prépare le projet avec tes clés, compile l'application puis l'installe. Prévois 30 à 60 minutes, dont 10 à 20 pour la première compilation.</p>
+
+  <div class="note info"><b>Avant de commencer</b>, il y a 5 choses à préparer. Ouvre chaque bloc, fais ce qui est indiqué, puis coche la case en bas.</div>
+
+  <div class="card" id="compat">
+    <b>Liste de compatibilité</b>
+    <div class="row" style="margin-top:10px;gap:18px">
+      <div style="flex:1;min-width:230px">
+        <div class="pill ok">✓ Prévu pour</div>
+        <ul>
+          <li>TV et box <b>Android TV / Google TV</b>, <b>Android 8.0 ou plus</b></li>
+          <li>Philips (Android TV), Sony Bravia, TCL, Hisense (Android TV), Xiaomi Mi Box, Nvidia Shield, Chromecast avec Google TV…</li>
+        </ul>
+      </div>
+      <div style="flex:1;min-width:230px">
+        <div class="pill bad">✗ Incompatible</div>
+        <ul>
+          <li><b>Samsung</b> (Tizen), <b>LG</b> (webOS)</li>
+          <li><b>Roku</b>, <b>Apple TV</b></li>
+          <li><b>Fire TV</b> d'Amazon (écran d'accueil non remplaçable)</li>
+          <li>Téléviseurs sous <b>VIDAA</b> ou <b>Titan OS</b> (certains Philips récents)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>Testé uniquement sur un Philips 55OLED810.</b> Pour les autres modèles compatibles sur le papier, tout n'est pas garanti : la touche Paramètres de la télécommande, le nettoyage et la définition du launcher par défaut varient selon les marques. L'étape 3 vérifie ta TV en direct.</div>
+  </div>
+
+  <details class="card" open>
+    <summary>1. Activer le mode développeur sur la TV et noter son adresse IP</summary>
+    <ol>
+      <li>Sur la TV : <b>Paramètres › Préférences de l'appareil › À propos</b>.</li>
+      <li>Appuie <b>7 fois</b> sur OK sur la ligne <b>« Build »</b> (ou « Numéro de build »). Un message indique que tu es développeur.</li>
+      <li>Reviens en arrière : <b>Préférences de l'appareil › Options pour les développeurs</b>.</li>
+      <li>Active <b>« Débogage USB »</b> (parfois appelé « Débogage ADB »), puis <b>« Débogage sans fil »</b> (ou « Débogage réseau »).</li>
+      <li>Ouvre l'écran du <b>Débogage sans fil</b> : il affiche <b>« Adresse IP et port »</b>, par exemple <code>192.168.1.25:37891</code>. <b>Note l'adresse IP</b> et le port.</li>
+      <li>Si la TV propose <b>« Associer l'appareil avec un code »</b>, ouvre cet écran : elle affiche une adresse avec un <b>port d'association</b> et un <b>code à 6 chiffres</b>. Tu les saisiras à l'étape suivante. Ils changent à chaque ouverture.</li>
+    </ol>
+    <div class="note">La TV et ce PC doivent être sur le <b>même réseau</b> (box ou routeur).</div>
+  </details>
+
+  <details class="card">
+    <summary>2. Installer Android Studio (il fournit Java et le SDK pour compiler)</summary>
+    <ol>
+      <li>Télécharge Android Studio : <a href="https://developer.android.com/studio" target="_blank" rel="noopener">developer.android.com/studio</a> (gratuit, environ 1 Go).</li>
+      <li>Installe-le avec les options par défaut.</li>
+      <li><b>Lance-le une première fois</b> et laisse l'assistant terminer (il télécharge le SDK Android). Tu peux ensuite le fermer : l'installeur s'occupe du reste.</li>
+    </ol>
+    <p class="hint">L'installeur n'a pas besoin que tu ouvres le projet dans Android Studio : il utilise son Java et son SDK en arrière-plan.</p>
+  </details>
+
+  <details class="card">
+    <summary>3. Créer une clé API OpenWeather (météo actuelle)</summary>
+    <ol>
+      <li>Crée un compte gratuit : <a href="https://home.openweathermap.org/users/sign_up" target="_blank" rel="noopener">home.openweathermap.org/users/sign_up</a> et confirme ton e-mail.</li>
+      <li>Ouvre <a href="https://home.openweathermap.org/api_keys" target="_blank" rel="noopener">home.openweathermap.org/api_keys</a> : une clé nommée « Default » existe déjà (ou crée-en une avec un nom au choix).</li>
+      <li>Copie la clé (32 caractères).</li>
+    </ol>
+    <div class="note">Une clé neuve peut mettre <b>jusqu'à 2 heures</b> à fonctionner. Si le test échoue à l'étape suivante, continue quand même et réessaie plus tard : la clé sera valide au moment de l'utilisation.</div>
+  </details>
+
+  <details class="card">
+    <summary>4. Créer une clé API TMDB (affiches, films et séries populaires)</summary>
+    <ol>
+      <li>Crée un compte gratuit : <a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener">themoviedb.org/signup</a> et confirme ton e-mail.</li>
+      <li>Ouvre <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org/settings/api</a> et clique sur <b>« Créer »</b> (ou « Request an API key »), choisis <b>« Developer »</b> et accepte les conditions.</li>
+      <li>Remplis le formulaire : nom d'application « TV Launcher perso », <b>URL</b> : n'importe quelle adresse valide (par exemple <code>https://example.com</code>), résumé : <i>« Launcher personnel pour ma TV Android, usage privé et non commercial, affiche les films et séries populaires »</i>.</li>
+      <li>Copie la <b>« Clé d'API »</b> (32 caractères hexadécimaux). <b>Pas</b> le « Jeton d'accès en lecture » (beaucoup plus long).</li>
+    </ol>
+  </details>
+
+  <details class="card">
+    <summary>5. Créer une clé API YouTube Data (vidéos tendances)</summary>
+    <ol>
+      <li>Va sur <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> avec ton compte Google et accepte les conditions.</li>
+      <li>En haut, clique sur le sélecteur de projet, puis <b>« Nouveau projet »</b> (nom : « TV Launcher ») et valide.</li>
+      <li>Menu ☰ › <b>API et services › Bibliothèque</b>. Cherche <b>« YouTube Data API v3 »</b>, ouvre-la et clique sur <b>« Activer »</b>.</li>
+      <li>Menu ☰ › <b>API et services › Identifiants</b> › <b>« Créer des identifiants » › « Clé API »</b>.</li>
+      <li>Copie la clé affichée (elle commence par <code>AIza</code>). Tu peux la restreindre à « YouTube Data API v3 » (recommandé, facultatif).</li>
+    </ol>
+    <p class="hint">Gratuit : le quota quotidien (10 000 unités) est très largement suffisant pour un usage personnel.</p>
+  </details>
+
+  <div class="card">
+    <label class="check"><input type="checkbox" class="prereq"><span>Le mode développeur et le débogage sans fil sont activés sur la TV et j'ai noté son adresse IP.</span></label>
+    <label class="check"><input type="checkbox" class="prereq"><span>Android Studio est installé et a été lancé une fois jusqu'à la fin de son assistant.</span></label>
+    <label class="check"><input type="checkbox" class="prereq"><span>J'ai mes 3 clés API (OpenWeather, TMDB, YouTube Data) à portée de main.</span></label>
+  </div>
+  <div class="actions"><span class="sp"></span><button class="btn primary" id="go1" disabled>Continuer →</button></div>
+</section>
+
+<!-- ================= 2. INFORMATIONS ================= -->
+<section data-step="2">
+  <h2>Vos informations</h2>
+  <p class="sub">Tout est enregistré sur ce PC (dossier de l'installeur) pour ne pas avoir à tout ressaisir.</p>
+
+  <div class="card">
+    <b>Ta TV</b>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="ip">Adresse IP de la TV</label><input id="ip" type="text" placeholder="192.168.1.25" autocomplete="off"></div>
+      <div class="field" style="max-width:190px"><label for="port">Port de connexion</label><input id="port" type="text" placeholder="5555"></div>
+    </div>
+    <p class="hint" style="margin-top:-4px">Avec « Débogage sans fil », prends le port affiché sur la TV (par exemple 37891). Sinon laisse 5555.</p>
+    <details>
+      <summary class="hint" style="cursor:pointer">Ma TV m'a demandé d'associer l'appareil avec un code</summary>
+      <div class="row" style="margin-top:10px">
+        <div class="field"><label for="pairPort">Port d'association</label><input id="pairPort" type="text" placeholder="ex. 41235" autocomplete="off"></div>
+        <div class="field"><label for="pairCode">Code à 6 chiffres</label><input id="pairCode" type="text" placeholder="123456" autocomplete="off"></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <b>Tes clés API</b>
+    <div class="field" style="margin-top:10px"><label for="kOW">OpenWeather</label><input id="kOW" type="password" autocomplete="off" spellcheck="false"><div class="kres" id="r_openWeather"></div></div>
+    <div class="field"><label for="kTM">TMDB (Clé d'API v3)</label><input id="kTM" type="password" autocomplete="off" spellcheck="false"><div class="kres" id="r_tmdb"></div></div>
+    <div class="field"><label for="kYT">YouTube Data API</label><input id="kYT" type="password" autocomplete="off" spellcheck="false"><div class="kres" id="r_youtube"></div></div>
+    <label class="check"><input type="checkbox" id="showkeys"><span class="hint">Afficher les clés</span></label>
+    <button class="btn small" id="testKeys">Tester les clés</button>
+  </div>
+
+  <div class="card">
+    <b>Ta ville (pour la météo)</b>
+    <div class="row" style="margin-top:10px;align-items:flex-end">
+      <div class="field"><label for="city">Ville</label><input id="city" type="text" placeholder="Lyon" autocomplete="off"></div>
+      <div class="field" style="flex:0"><button class="btn" id="geoBtn">Rechercher</button></div>
+    </div>
+    <div class="field" id="geoWrap" style="display:none"><label for="geoSel">Choisis la bonne ville</label><select id="geoSel"></select></div>
+    <div class="hint" id="geoCur"></div>
+  </div>
+
+  <div class="card">
+    <b>Options du launcher</b>
+    <label class="check" style="margin-top:10px"><input type="checkbox" id="optSystem" checked><span>Afficher l'utilisation de la <b>RAM et du stockage</b> sous l'horloge</span></label>
+    <label class="check"><input type="checkbox" id="optSugg" checked><span>Afficher des <b>suggestions</b> quand je survole YouTube, Prime Video, Apple TV, Canal+ ou Disney+ <span class="hint">(la clé YouTube n'est alors plus nécessaire si tu décoches)</span></span></label>
+  </div>
+
+  <div class="note"><b>À savoir avant d'installer</b>
+    <ul>
+      <li>Les suggestions <b>ouvrent l'application</b> (Prime Video, Apple TV, Canal+, Disney+), pas la page du film ou de la série. <b>Seul YouTube</b> ouvre directement la vidéo choisie.</li>
+      <li>Selon le modèle de TV, le <b>bouton Paramètres de la télécommande peut ne plus fonctionner</b> avec ce launcher (c'est la TV qui le garde pour elle). Utilise alors l'icône ⚙ en haut à droite de l'écran d'accueil.</li>
+    </ul>
+    <label class="check"><input type="checkbox" id="ack"><span>J'ai lu et compris ces deux points.</span></label>
+  </div>
+
+  <div class="note info">Les suggestions « populaires en ce moment » et les sorties Canal+ sont réglées sur la <b>France</b>.</div>
+  <div class="actions"><button class="btn" data-go="1">← Retour</button><span class="sp"></span><button class="btn primary" id="go2" disabled>Continuer →</button></div>
+</section>
+
+<!-- ================= 3. CONNEXION ================= -->
+<section data-step="3">
+  <h2>Connexion à la TV</h2>
+  <p class="sub">L'installeur télécharge au besoin <b>adb</b> (l'outil officiel de Google) et se connecte à ta TV.</p>
+  <div class="note">Garde un œil sur la TV : une fenêtre <b>« Autoriser le débogage USB ? »</b> va apparaître. Coche <b>« Toujours autoriser »</b> et valide.</div>
+  <div class="actions" style="margin-top:6px"><button class="btn primary" id="doConnect">Se connecter</button><span id="connStat"></span></div>
+  <div id="compatResult"></div>
+  <div class="console" id="con-connect"></div>
+  <div class="actions"><button class="btn" data-go="2">← Retour</button><span class="sp"></span><button class="btn primary" id="go3" disabled>Continuer →</button></div>
+</section>
+
+<!-- ================= 4. SAUVEGARDE & NETTOYAGE ================= -->
+<section data-step="4">
+  <h2>Sauvegarde et nettoyage</h2>
+  <p class="sub">D'abord une sauvegarde de l'état de la TV, ensuite la désactivation des services de publicité, de télémétrie et de recommandations.</p>
+
+  <div class="card">
+    <b>1. Sauvegarder la TV</b>
+    <p class="hint">Enregistre la liste des applications, celles déjà désactivées, les réglages Android et le launcher d'origine dans un dossier de l'installeur. Ce n'est pas une copie des applications : le nettoyage ne supprime rien, il désactive.</p>
+    <div class="actions" style="margin-top:6px"><button class="btn primary" id="doBackup">Sauvegarder la TV</button><button class="btn small" id="openBackup" style="display:none">Ouvrir le dossier</button><span id="bkStat"></span></div>
+  </div>
+
+  <div class="card" id="bloatCard">
+    <b>2. Nettoyer</b>
+    <div class="note">Tout est <b>réversible</b> (bouton « Tout restaurer »). Seuls les paquets présents sur ta TV sont proposés. La liste est issue de pratiques courantes sur Android TV, je ne peux pas garantir qu'elle couvre toutes les marques : relis-la et décoche ce que tu veux garder.</div>
+    <div id="bloatList" class="hint">Connecte-toi d'abord.</div>
+    <div class="actions"><button class="btn primary" id="doDebloat" disabled>Désactiver la sélection</button><button class="btn" id="doRestore">Tout restaurer</button><button class="btn small" id="reloadCat">Recharger la liste</button></div>
+  </div>
+  <div class="console" id="con-backup"></div>
+  <div class="actions"><button class="btn" data-go="3">← Retour</button><span class="sp"></span><button class="btn primary" id="go4" disabled>Continuer →</button></div>
+</section>
+
+<!-- ================= 5. PROJET & COMPILATION ================= -->
+<section data-step="5">
+  <h2>Projet et compilation</h2>
+  <p class="sub">L'installeur crée le projet avec tes clés, puis le compile avec Android Studio en arrière-plan.</p>
+
+  <div class="card">
+    <b>1. Créer le projet</b>
+    <p class="hint">Crée un dossier et une archive <code>TvLauncher-Projet.zip</code> avec tout le nécessaire (tes clés y sont déjà inscrites : ne la partage pas).</p>
+    <div class="actions" style="margin-top:6px"><button class="btn primary" id="doGen">Créer le projet</button><button class="btn small" id="openZip" style="display:none">Ouvrir le dossier</button><span id="genStat"></span></div>
+  </div>
+
+  <div class="card">
+    <b>2. Compiler l'APK</b>
+    <div id="envBox" class="hint">Détection en cours…</div>
+    <details style="margin-top:8px"><summary class="hint" style="cursor:pointer">Réglages avancés (chemins Java et SDK)</summary>
+      <div class="row" style="margin-top:10px">
+        <div class="field"><label for="javaHome">Dossier du JDK 17+ (laisser vide = automatique)</label><input id="javaHome" type="text" placeholder="C:\Program Files\Android\Android Studio\jbr"></div>
+        <div class="field"><label for="sdkDir">Dossier du SDK Android (vide = automatique)</label><input id="sdkDir" type="text" placeholder="C:\Users\toi\AppData\Local\Android\Sdk"></div>
+      </div>
+    </details>
+    <label class="check"><input type="checkbox" id="lic"><span>J'accepte les licences du SDK Android (<a href="https://developer.android.com/studio/terms" target="_blank" rel="noopener">conditions de Google</a>). L'installeur les enregistre pour que Gradle puisse télécharger les composants manquants.</span></label>
+    <div class="note">La <b>première compilation</b> télécharge Gradle et les bibliothèques (plusieurs centaines de Mo, 5 à 20 minutes). Ne ferme pas la fenêtre.</div>
+    <div class="actions"><button class="btn primary" id="doBuild" disabled>Compiler l'APK</button><button class="btn danger small" id="cancelBuild" style="display:none">Annuler</button><span id="buildStat"></span></div>
+  </div>
+  <div class="console" id="con-build" style="height:300px"></div>
+  <div class="actions"><button class="btn" data-go="4">← Retour</button><span class="sp"></span><button class="btn primary" id="go5" disabled>Continuer →</button></div>
+</section>
+
+<!-- ================= 6. INSTALLATION ================= -->
+<section data-step="6">
+  <h2>Installation sur la TV</h2>
+  <p class="sub">L'APK compilé est rempli automatiquement. Tu peux aussi indiquer le chemin d'un APK compilé autrement.</p>
+  <div class="card">
+    <div class="field"><label for="apk">Chemin du fichier APK</label><input id="apk" type="text" placeholder="C:\...\TvLauncher.apk"></div>
+    <label class="check"><input type="checkbox" id="setHome" checked><span>Définir « TV Launcher » comme écran d'accueil par défaut</span></label>
+    <div class="actions" style="margin-top:6px"><button class="btn primary" id="doInstall">Installer sur la TV</button><span id="instStat"></span></div>
+  </div>
+  <div class="console" id="con-install"></div>
+  <div class="card final" id="finalBox" style="display:none">
+    <div class="big">🎉</div>
+    <h2>C'est installé !</h2>
+    <p class="sub">Appuie sur le bouton Accueil de ta télécommande. Si Android demande quel écran d'accueil utiliser, choisis « TV Launcher » puis « Toujours ».</p>
+    <p class="hint">Pour revenir en arrière : étape 4 › « Tout restaurer », et désinstalle « TV Launcher » dans Réglages › Applications.</p>
+  </div>
+  <div class="actions"><button class="btn" data-go="5">← Retour</button></div>
+</section>
+
+</main>
+</div>
+<footer>Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB. Données météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> et OpenWeather. Netflix, YouTube, Prime Video, Apple TV, Canal+ et Disney+ sont des marques de leurs propriétaires ; ce projet n'est affilié à aucun d'eux.</footer>
+
+<script>
+const T = "__TOKEN__";
+const STEPS = ["Prérequis","Vos informations","Connexion","Sauvegarde & nettoyage","Projet & compilation","Installation"];
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const S = {step:1, max:1, done:new Set(), connected:false, backedUp:false, apk:"", geo:null, busy:""};
+
+async function api(path, method="GET", body){
+  const r = await fetch(path, {method, headers:{"X-Token":T,"Content-Type":"application/json"}, body: body? JSON.stringify(body):undefined});
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error || ("HTTP "+r.status));
+  return j;
+}
+
+// ---------- navigation
+function buildNav(){
+  $("#nav").innerHTML = STEPS.map((t,i)=>`<div class="st" data-i="${i+1}"><span class="n">${i+1}</span><span>${t}</span></div>`).join("");
+  $$("#nav .st").forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; if(i<=S.max) show(i); });
+}
+function show(i){
+  S.step=i; S.max=Math.max(S.max,i);
+  $$("section").forEach(s=>s.classList.toggle("active", +s.dataset.step===i));
+  $$("#nav .st").forEach(el=>{ const k=+el.dataset.i;
+    el.classList.toggle("active",k===i); el.classList.toggle("done",S.done.has(k)); el.classList.toggle("locked",k>S.max); });
+  $("main").scrollTop=0;
+  if(i===4) loadCatalog(); if(i===5) loadEnv(); if(i===6 && !$("#apk").value && S.apk) $("#apk").value=S.apk;
+}
+function complete(i){ S.done.add(i); $$("#nav .st")[i-1].classList.add("done"); }
+$$("[data-go]").forEach(b=>b.onclick=()=>show(+b.dataset.go));
+
+// ---------- étape 1
+function chkPrereq(){ $("#go1").disabled = !$$(".prereq").every(c=>c.checked); }
+$$(".prereq").forEach(c=>c.onchange=chkPrereq);
+$("#go1").onclick=()=>{complete(1);show(2)};
+
+// ---------- étape 2
+function cfg(){
+  return {ip:$("#ip").value.trim(), port:$("#port").value.trim()||"5555", pairPort:$("#pairPort").value.trim(), pairCode:$("#pairCode").value.trim(),
+    openWeather:$("#kOW").value.trim(), tmdb:$("#kTM").value.trim(), youtube:$("#kYT").value.trim(),
+    city:S.geo?S.geo.name:$("#city").value.trim(), lat:S.geo?S.geo.lat:"", lon:S.geo?S.geo.lon:"",
+    javaHome:$("#javaHome").value.trim(), sdkDir:$("#sdkDir").value.trim(), acceptLicenses:$("#lic").checked,
+    hideSystem:!$("#optSystem").checked, hideSuggestions:!$("#optSugg").checked};
+}
+function check2(){ const c=cfg(); $("#go2").disabled = !(c.ip && c.openWeather && c.tmdb && (c.youtube||c.hideSuggestions) && c.lat && c.lon && $("#ack").checked); }
+$("#ack").onchange=check2; $("#optSystem").onchange=check2;
+$("#optSugg").onchange=()=>{ $("#kYT").placeholder = $("#optSugg").checked ? "" : "Facultatif (suggestions désactivées)"; check2(); };
+["ip","port","pairPort","pairCode","kOW","kTM","kYT","city"].forEach(id=>$("#"+id).addEventListener("input",()=>{ if(id==="city"){S.geo=null;$("#geoCur").textContent="";} check2(); }));
+$("#showkeys").onchange=e=>["kOW","kTM","kYT"].forEach(id=>$("#"+id).type=e.target.checked?"text":"password");
+$("#geoBtn").onclick=async()=>{
+  const q=$("#city").value.trim(); if(!q) return;
+  $("#geoBtn").disabled=true;
+  try{
+    const res=await api("/api/geocode?q="+encodeURIComponent(q));
+    if(!res.length){ $("#geoCur").textContent="Aucune ville trouvée."; $("#geoWrap").style.display="none"; return; }
+    const sel=$("#geoSel"); sel.innerHTML=res.map((r,i)=>`<option value="${i}">${r.label}</option>`).join("");
+    S.geoList=res; $("#geoWrap").style.display="block";
+    pickGeo(0);
+  }catch(e){ $("#geoCur").textContent=e.message; }
+  $("#geoBtn").disabled=false;
+};
+function pickGeo(i){ S.geo=S.geoList[i]; $("#geoCur").textContent="✓ "+S.geo.label+" ("+S.geo.lat+", "+S.geo.lon+")"; check2(); }
+$("#geoSel").onchange=e=>pickGeo(+e.target.value);
+$("#city").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#geoBtn").click(); });
+$("#testKeys").onclick=async()=>{
+  $("#testKeys").disabled=true; $("#testKeys").textContent="Test en cours…";
+  try{
+    const r=await api("/api/test-keys","POST",cfg());
+    for(const k of ["openWeather","tmdb","youtube"]){ const el=$("#r_"+k), v=r[k]; el.className="kres "+(v.ok?"ok":"bad"); el.textContent=(v.ok?"✓ ":"✗ ")+v.msg; }
+  }catch(e){ alert(e.message); }
+  $("#testKeys").disabled=false; $("#testKeys").textContent="Tester les clés";
+};
+$("#go2").onclick=async()=>{ await api("/api/config","POST",cfg()); complete(2); show(3); };
+
+// ---------- tâches & journal
+const CON = {connect:"con-connect", backup:"con-backup", debloat:"con-backup", restore:"con-backup", generate:"con-build", build:"con-build", install:"con-install"};
+function addLog(task,text){
+  const el=document.getElementById(CON[task]); if(!el) return;
+  const near = el.scrollTop+el.clientHeight >= el.scrollHeight-40;
+  const d=document.createElement("div"); d.textContent=text;
+  if(/^✓/.test(text)) d.className="ok"; else if(/^✗|FAILED|error:|^e: |Exception/.test(text)) d.className="bad";
+  else if(/^⚠|WARNING|^w: /.test(text)) d.className="warn"; else if(/^➜/.test(text)) d.className="go";
+  el.appendChild(d); if(near) el.scrollTop=el.scrollHeight;
+}
+function busy(task,on){
+  S.busy = on?task:"";
+  const m={connect:["#doConnect","#connStat"],backup:["#doBackup","#bkStat"],debloat:["#doDebloat","#bkStat"],restore:["#doRestore","#bkStat"],generate:["#doGen","#genStat"],build:["#doBuild","#buildStat"],install:["#doInstall","#instStat"]};
+  $$(".btn.primary,#doRestore,#doGen").forEach(b=>{ if(!b.id.startsWith("go")) b.disabled=on; });
+  const stat=$(m[task][1]); stat.innerHTML=on?'<span class="spin"></span> en cours…':"";
+  $("#cancelBuild").style.display = (on&&(task==="build"||task==="connect"))?"inline-block":"none";
+  if(!on){ refreshButtons(); }
+}
+function refreshButtons(){
+  $("#doConnect").disabled=false; $("#doBackup").disabled=!S.connected; $("#doDebloat").disabled=!S.backedUp;
+  $("#doRestore").disabled=!S.connected; $("#doGen").disabled=false;
+  $("#doBuild").disabled=!S.generated||!$("#lic").checked; $("#doInstall").disabled=!S.connected;
+  $("#go3").disabled=!S.connected; $("#go4").disabled=!S.backedUp; $("#go5").disabled=!S.apk;
+}
+async function run(task, extra={}){
+  busy(task,true);
+  try{ await api("/api/run/"+task,"POST",Object.assign(cfg(),extra)); }
+  catch(e){ addLog(task,"✗ "+e.message); busy(task,false); }
+}
+function onDone(e){
+  const {task,ok,data}=e; busy(task,false);
+  const st=(sel,good,txt)=>{ $(sel).innerHTML = `<span class="pill ${good?"ok":"bad"}">${good?"✓":"✗"} ${txt}</span>`; };
+  if(task==="connect"){ S.connected=ok; st("#connStat",ok,ok?(data.brand+" "+data.model):"Échec"); if(ok){complete(3); showCompat(data.compat);} }
+  if(task==="backup"){ S.backedUp=ok; st("#bkStat",ok,ok?"Sauvegarde faite":"Échec"); if(ok){ S.backupDir=data.dir; $("#openBackup").style.display="inline-block"; loadCatalog(); } }
+  if(task==="debloat"){ st("#bkStat",ok,ok?(data.disabled+" désactivé(s)"):"Échec"); if(ok){ complete(4); loadCatalog(); } }
+  if(task==="restore"){ st("#bkStat",ok,ok?(data.restored+" réactivé(s)"):"Échec"); loadCatalog(); }
+  if(task==="generate"){ S.generated=ok; S.zip=ok?data.zip:""; st("#genStat",ok,ok?"Projet créé":"Échec"); if(ok) $("#openZip").style.display="inline-block"; }
+  if(task==="build"){ if(ok){ S.apk=data.apk; $("#apk").value=data.apk; st("#buildStat",true,"APK prêt"); complete(5);} else st("#buildStat",false,"Échec"); }
+  if(task==="install"){ st("#instStat",ok,ok?"Installé":"Échec"); if(ok){ complete(6); $("#finalBox").style.display="block"; } }
+  refreshButtons();
+}
+function connectSSE(){
+  const es=new EventSource("/api/events?since="+(S.seen||0)+"&t="+T);
+  es.onmessage=m=>{ S.seen=+m.lastEventId; const e=JSON.parse(m.data); if(e.type==="log") addLog(e.task,e.text); else if(e.type==="done") onDone(e); };
+  es.onerror=()=>{ /* reconnexion automatique */ };
+}
+
+function showCompat(c){
+  const box=$("#compatResult"); if(!c){ box.innerHTML=""; return; }
+  S.compat=c.level;
+  const cls = c.level==="bad" ? "bad" : "info";
+  box.innerHTML = `<div class="note ${cls}"><b>${c.level==="bad"?"Cette TV n'est probablement pas compatible":"Vérification de compatibilité"}</b><ul>`+c.notes.map(n=>`<li>${n}</li>`).join("")+"</ul></div>";
+}
+// ---------- étape 3
+$("#doConnect").onclick=()=>{ $("#con-connect").innerHTML=""; run("connect"); };
+$("#go3").onclick=()=>{ if(S.compat==="bad" && !confirm("L'installeur pense que cette TV n'est pas compatible. Continuer quand même ?")) return; show(4); };
+$("#cancelBuild").onclick=()=>api("/api/cancel","POST");
+
+// ---------- étape 4
+$("#doBackup").onclick=()=>run("backup");
+$("#openBackup").onclick=()=>api("/api/open","POST",{Path:S.backupDir});
+async function loadCatalog(){
+  try{
+    const c=await api("/api/catalog");
+    const box=$("#bloatList");
+    if(!c.connected){ box.innerHTML="Connecte-toi d'abord (étape 3) pour voir les paquets présents sur ta TV."; return; }
+    const groups={}; const absent=[]; c.items.forEach(i=>{ if(i.installed===false) absent.push(i); else (groups[i.group]=groups[i.group]||[]).push(i); });
+    let h="";
+    for(const [g,items] of Object.entries(groups)){
+      h+=`<div class="group">${g}</div>`;
+      items.forEach(i=>{ h+=`<label class="bl"><input type="checkbox" class="bloat" value="${i.pkg}" ${i.default?"checked":""}><span><b>${i.label}</b><small>${i.desc} · <code>${i.pkg}</code></small></span></label>`; });
+    }
+    if(!Object.keys(groups).length) h+='<p class="hint">Aucun des paquets connus n\'est présent sur cette TV.</p>';
+    if(absent.length) h+=`<details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Paquets connus absents de cette TV (${absent.length})</summary>`+absent.map(i=>`<div class="bl absent"><span><b>${i.label}</b><small><code>${i.pkg}</code></small></span></div>`).join("")+"</details>";
+    if(c.detected.length){
+      h+=`<details style="margin-top:10px"><summary class="group" style="cursor:pointer;display:inline">Détectés automatiquement (${c.detected.length}) — à vérifier</summary>`;
+      c.detected.forEach(i=>{ h+=`<label class="bl"><input type="checkbox" class="bloat" value="${i.pkg}"><span><b>${i.pkg}</b><small>${i.desc}</small></span></label>`; });
+      h+="</details>";
+    }
+    box.innerHTML=h;
+  }catch(e){ $("#bloatList").textContent=e.message; }
+}
+$("#reloadCat").onclick=loadCatalog;
+$("#doDebloat").onclick=()=>{
+  const pk=$$(".bloat:checked").map(c=>c.value);
+  if(!pk.length){ alert("Rien n'est coché."); return; }
+  if(pk.some(p=>/tvlauncher|launcherx/.test(p)) && !confirm("Tu as coché l'écran d'accueil d'origine. À ne faire que si ton launcher est déjà installé et testé. Continuer ?")) return;
+  run("debloat",{packages:pk});
+};
+$("#doRestore").onclick=()=>{ if(confirm("Réactiver tous les paquets désactivés par l'installeur ?")) run("restore"); };
+$("#go4").onclick=()=>{ complete(4); show(5); };
+
+// ---------- étape 5
+async function loadEnv(){
+  try{
+    const e=await api("/api/env");
+    const li=(ok,t)=>`<span class="pill ${ok?"ok":"bad"}">${ok?"✓":"✗"} ${t}</span> `;
+    $("#envBox").innerHTML = li(e.androidStudio,"Android Studio")+li(e.javaHome&&e.javaVersion>=17,"JDK "+(e.javaVersion||"?"))+li(e.sdk,"SDK Android")+li(e.adb,"adb");
+    $("#envline").textContent = "";
+  }catch(e){}
+}
+$("#doGen").onclick=()=>{ $("#con-build").innerHTML=""; run("generate"); };
+$("#openZip").onclick=()=>api("/api/open","POST",{Path:S.zip.replace(/[\\/][^\\/]*$/,"")});
+$("#lic").onchange=refreshButtons;
+$("#doBuild").onclick=()=>run("build");
+$("#go5").onclick=()=>{ complete(5); show(6); };
+
+// ---------- étape 6
+$("#doInstall").onclick=()=>run("install",{apk:$("#apk").value.trim(), setHome:$("#setHome").checked});
+
+// ---------- divers
+$("#quit").onclick=async()=>{ if(confirm("Quitter l'installeur ?")){ try{await api("/api/quit","POST");}catch(e){} document.body.innerHTML='<div class="final" style="margin:80px auto"><h2>Installeur fermé</h2><p class="sub">Tu peux fermer cette fenêtre.</p></div>'; } };
+setInterval(()=>api("/api/ping").catch(()=>{}),5000);
+
+(async function init(){
+  buildNav(); show(1); connectSSE();
+  try{
+    const c=await api("/api/config");
+    $("#ip").value=c.ip||""; $("#port").value=c.port||"5555"; $("#pairPort").value=c.pairPort||""; $("#pairCode").value=c.pairCode||"";
+    $("#kOW").value=c.openWeather||""; $("#kTM").value=c.tmdb||""; $("#kYT").value=c.youtube||"";
+    $("#city").value=c.city||""; $("#javaHome").value=c.javaHome||""; $("#sdkDir").value=c.sdkDir||""; $("#lic").checked=!!c.acceptLicenses; $("#optSystem").checked=!c.hideSystem; $("#optSugg").checked=!c.hideSuggestions; $("#optSugg").onchange();
+    if(c.lat&&c.lon){ S.geo={name:c.city,lat:c.lat,lon:c.lon,label:c.city}; $("#geoCur").textContent="✓ "+c.city+" ("+c.lat+", "+c.lon+")"; }
+    check2();
+  }catch(e){}
+  refreshButtons();
+})();
+</script>
+</body>
+</html>

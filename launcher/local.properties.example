@@ -1,0 +1,22 @@
+# Copie ce fichier en "local.properties" à la racine de launcher/ (Android Studio y ajoute sdk.dir tout seul).
+# Ces valeurs sont injectées dans l'application à la compilation. Ne publie JAMAIS local.properties.
+# (L'installeur Windows génère ce fichier pour toi.)
+
+# https://home.openweathermap.org/api_keys  (météo actuelle, plan gratuit)
+OPENWEATHER_API_KEY=
+# https://www.themoviedb.org/settings/api  ("Clé d'API" v3)
+TMDB_API_KEY=
+# https://console.cloud.google.com/  ("YouTube Data API v3" activée, clé API). Inutile si SHOW_SUGGESTIONS=false
+YOUTUBE_API_KEY=
+
+# Ta ville (latitude / longitude décimales)
+WEATHER_CITY=Lyon
+WEATHER_LAT=45.7600
+WEATHER_LON=4.8400
+
+# Options (true par défaut)
+SHOW_SYSTEM_STATS=true
+SHOW_SUGGESTIONS=true
+
+# Facultatif : clé Unsplash (sinon photos picsum.photos)
+UNSPLASH_ACCESS_KEY=
